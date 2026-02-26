@@ -1,0 +1,28 @@
+[Unit]
+Description=Keycloak Server
+Requires={{ keycloak.depends_on }}
+After={{ keycloak.depends_on }}
+Wants=network-online.target
+Requires=keycloak-db-postgres.service
+
+[Container]
+Image={{ keycloak.image }}
+Network={{ stack.network }}
+
+PublishPort={{ keycloak.host_port }}:{{ keycloak.container_port }}
+EnvironmentFile={{ keycloak.env_file }}
+
+Exec=start
+
+[Service]
+Restart=on-failure
+RestartSec=10s
+StartLimitIntervalSec=300
+StartLimitBurst=5
+TimeoutStartSec=180
+TimeoutStopSec=60
+
+ExecStartPre=/usr/bin/bash -c 'until /usr/bin/podman healthcheck run keycloak-db-postgres; do sleep 5; done'
+
+[Install]
+WantedBy=default.target

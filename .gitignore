@@ -1,0 +1,21 @@
+# Ignore all files inside Postgres database folder, keep the folder
+postgres-db/*
+!.gitkeep
+!.gitignore
+# Ignore all files inside Keycloak runtime/config folder, keep the folder
+keycloak-data/*
+!.gitkeep
+
+# Ignore environment files (optional, for security)
+
+
+# Ignore logs
+*.log
+
+# Ignore temporary files
+*.tmp
+*.swp
+*.bak
+
+# Ignore OS-specific files (optional)
+.DS_Store

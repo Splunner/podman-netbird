@@ -1,0 +1,70 @@
+{
+    "Stuns": [
+        {
+            "Proto": "udp",
+            "URI": "stun:YOUR------DOMAIN.COM:3478",
+            "Username": "",
+            "Password": ""
+        }
+    ],
+    "TURNConfig": null,
+    "Relay": {
+        "Addresses": [
+            "rels://OURDOMAIN.COM:443"
+        ],
+        "CredentialsTTL": "24h0m0s",
+        "Secret": "YOUR------KEY"
+    },
+    "Signal": {
+        "Proto": "https",
+        "URI": "YOUR------DOMAIN.COM:443",
+        "Username": "",
+        "Password": ""
+    },
+    "Datadir": "/var/lib/netbird/",
+    "DataStoreEncryptionKey": "YOUR------KEY",
+    "HttpConfig": {
+        "LetsEncryptDomain": "",
+        "CertFile": "",
+        "CertKey": "",
+        "AuthAudience": "netbird-dashboard",
+        "CLIAuthAudience": "netbird-cli",
+        "AuthIssuer": "https://YOUR------DOMAIN.COM/oauth2",
+        "AuthUserIDClaim": "sub",
+        "AuthKeysLocation": "https://YOUR------DOMAIN.COM/oauth2/keys",
+        "OIDCConfigEndpoint": "https://YOUR------DOMAIN.COM/oauth2/.well-known/openid-configuration",
+        "IdpSignKeyRefreshEnabled": true,
+        "ExtraAuthAudience": ""
+    },
+    "IdpManagerConfig": null,
+    "DeviceAuthorizationFlow": null,
+    "PKCEAuthorizationFlow": null,
+    "StoreConfig": {
+        "Engine": ""
+    },
+    "ReverseProxy": {
+        "TrustedHTTPProxies": null,
+        "TrustedHTTPProxiesCount": 0,
+        "TrustedPeers": null
+    },
+    "DisableDefaultPolicy": false,
+    "EmbeddedIdP": {
+        "Enabled": true,
+        "Issuer": "https://YOUR------DOMAIN.COM/oauth2",
+        "LocalAddress": "localhost:80",
+        "Storage": {
+            "Type": "sqlite3",
+            "Config": {
+                "File": "/var/lib/netbird/idp.db"
+            }
+        },
+        "DashboardRedirectURIs": [
+            "https://YOUR------DOMAIN.COM/nb-auth",
+            "https://YOUR------DOMAIN.COM/nb-silent-auth"
+        ],
+        "CLIRedirectURIs": null,
+        "Owner": null,
+        "SignKeyRefreshEnabled": false,
+        "LocalAuthDisabled": false
+    }
+}

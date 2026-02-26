@@ -1,0 +1,26 @@
+settings:
+  output_dir: "~/.config/containers/systemd"
+  template_dir: "sources"
+
+stack:
+  network: keycloak-net
+
+containers:
+  - template: postgres.container.j2
+    output: keycloak-db-postgres.container
+  - template: keycloak.container.j2
+    output: keycloak-manager.container
+
+postgres:
+  image: docker.io/postgres:15
+  host_port: 5432
+  data_dir: "%h/podman-netbird/postgres-db"
+  env_file: "%h/podman-netbird/.env/.env-keycloak-postgres"
+  postgres_user: "keycloak"
+
+keycloak:
+  image: quay.io/keycloak/keycloak:26.5.2
+  host_port: 8089
+  container_port: 8080
+  env_file: "%h/podman-netbird/.env/.env-keycloak-postgres"
+  depends_on: keycloak-db-postgres.service

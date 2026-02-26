@@ -1,0 +1,15 @@
+# Ignore environment files
+*.env*
+.env*
+
+# Do not
+!.gitkeep
+!.gitignore
+
+
+
+
+!.env-netbird-relay.defaults
+!.env-netbird.defaults
+!.env-keycloak-postgres.defaults
+!dashboard.env.defaults

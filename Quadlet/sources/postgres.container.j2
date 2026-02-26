@@ -1,0 +1,28 @@
+[Unit]
+Description=Keycloak PostgreSQL Database
+After=network-online.target
+Wants=network-online.target
+
+[Container]
+Image={{ postgres.image }}
+Network={{ stack.network }}
+
+EnvironmentFile={{ postgres.env_file }}
+Environment=PGDATA=/var/lib/postgresql/data/data
+
+Volume={{ postgres.data_dir }}:/var/lib/postgresql/data:Z
+PublishPort={{ postgres.host_port }}:5432
+
+HealthCmd=pg_isready -U {{ postgres.postgres_user }}
+HealthInterval=10s
+HealthTimeout=5s
+HealthRetries=5
+HealthStartPeriod=20s
+
+[Service]
+Restart=on-failure
+TimeoutStartSec=180
+TimeoutStopSec=60
+
+[Install]
+WantedBy=default.target
