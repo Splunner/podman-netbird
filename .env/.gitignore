@@ -13,3 +13,4 @@
 !.env-netbird.defaults
 !.env-keycloak-postgres.defaults
 !dashboard.env.defaults
+!relay.env.defaults
