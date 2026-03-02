@@ -1,8 +1,34 @@
+# Requiments
+```
+# This below will install pip3 module for python3
+sudo dnf install python3-pip -y
+
+# This is to verify that cgroupv2 is enabled and default option should be first cgroup2
+mount|grep ^cgroup|awk '{print $1}'|uniq
+
+
+# Allow ports below 1024 to be use by rootles podman
+sysctl -w net.ipv4.ip_unprivileged_port_start=0.
+
+
+```
+
+## Build Quadlet files in systemd user directory
+
+```
+python3 ~/podman-netbird/Quadlet/render.py configurations/prod.yaml 
+```
+
+
+
+## Before starting Quadlets
+
+
 ### Enable Firewall
 
 ```
 sudo firewall-cmd --add-port=8080/tcp --permanent
-
+sudo firewall-cmd --add-port=8089/tcp --permanent
 sudo firewall-cmd --add-port=5432/tcp --permanent
 
 sudo firewall-cmd --reload
@@ -29,6 +55,7 @@ podman-compose --env-file ~/podman-netbird/.env/.env-netbird -f ~/podman-netbird
 ```
 
 ### Enable Netbird Dashboard
+
 
 ```
 podman run -d \
