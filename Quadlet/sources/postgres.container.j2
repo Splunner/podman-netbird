@@ -5,13 +5,14 @@ Wants=network-online.target
 
 [Container]
 Image={{ postgres.image }}
-Network={{ stack.network }}
+Network={{ stack["network-keycloak"] }}
 
 EnvironmentFile={{ postgres.env_file }}
 Environment=PGDATA=/var/lib/postgresql/data/data
 
 Volume={{ postgres.data_dir }}:/var/lib/postgresql/data:Z
 PublishPort={{ postgres.host_port }}:5432
+ContainerName={{ postgres.container_name}}
 
 HealthCmd=pg_isready -U {{ postgres.postgres_user }}
 HealthInterval=10s

@@ -7,11 +7,11 @@ Requires=keycloak-db-postgres.service
 
 [Container]
 Image={{ keycloak.image }}
-Network={{ stack.network }}
+Network={{ stack["network-keycloak"] }}
 
 PublishPort={{ keycloak.host_port }}:{{ keycloak.container_port }}
 EnvironmentFile={{ keycloak.env_file }}
-
+ContainerName={{ keycloak.container_name}}
 Exec=start
 
 [Service]
