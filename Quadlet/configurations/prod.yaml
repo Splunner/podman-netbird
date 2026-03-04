@@ -9,8 +9,24 @@ stack:
 containers:
   - template: postgres.container.j2
     output: keycloak-db-postgres.container
+
   - template: keycloak.container.j2
     output: keycloak-manager.container
+
+  - template: netbird_managment.container.j2
+    output: netbird-managment.container
+
+  - template: netbird_dashboard.container.j2
+    output: netbird-dashboard.container
+
+  - template: netbird_relay.container.j2
+    output: netbird-relay.container
+
+  - template: netbird_signal.container.j2
+    output: netbird-signal.container
+
+  - template: netbird_nginx.container.j2
+    output: netbird-nginx.container
 
 postgres:
   image: docker.io/postgres:15
@@ -27,3 +43,52 @@ keycloak:
   env_file: "%h/podman-netbird/.env/.env-keycloak-postgres"
   depends_on: keycloak-db-postgres.service
   container_name: "keycloak-manager"
+
+netbird_managment:
+  image: docker.io/netbirdio/management:latest
+  container_name: netbird-managment
+  host_port: 8081
+  container_port: 80
+  volume_name: netbird_managment
+  config_file: "%h/podman-netbird/management/management.json"
+  domain: netbird.selfhosteds
+  depends_on: keycloak-manager.service
+
+netbird_dashboard:
+  image: docker.io/netbirdio/dashboard:latest
+  container_name: netbird-dashboard
+  host_port: 8080
+  container_port: 80
+  env_file: "%h/podman-netbird/.env/dashboard.env"
+  depends_on: netbird-managment.service
+
+netbird_relay:
+  image: docker.io/netbirdio/relay:latest
+  container_name: netbird-relay
+  env_file: "%h/podman-netbird/.env/relay.env"
+  http_host_port: 8084
+  http_container_port: 80
+  stun_host_port: 3478
+  stun_container_port: 3478
+  depends_on: netbird-managment.service
+
+netbird_signal:
+  image: docker.io/netbirdio/signal:latest
+  container_name: netbird-signal
+  http_host_port: 8083
+  http_container_port: 80
+  grpc_host_port: 10000
+  grpc_container_port: 10000
+  depends_on: netbird-managment.service
+
+netbird_nginx:
+  image: docker.io/library/nginx:stable
+  container_name: nginx-netbird
+  http_host_port: 80
+  http_container_port: 80
+  https_host_port: 443
+  https_container_port: 443
+  conf_dir: "%h/podman-netbird/nginx_configuration"
+  fullchain: "%h/podman-netbird/certs/fullchain.pem"
+  privkey: "%h/podman-netbird/certs/privkey.pem"
+  depends_on: netbird-managment.service

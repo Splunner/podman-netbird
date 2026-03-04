@@ -1,0 +1,25 @@
+[Unit]
+Description=NetBird Signal
+Wants=network-online.target
+After=network-online.target
+
+Requires={{ netbird_signal.depends_on }}
+After={{ netbird_signal.depends_on }}
+
+[Container]
+Image={{ netbird_signal.image }}
+ContainerName={{ netbird_signal.container_name }}
+Network={{ stack["network-netbird"] }}
+
+PublishPort={{ netbird_signal.http_host_port }}:{{ netbird_signal.http_container_port }}
+PublishPort={{ netbird_signal.grpc_host_port }}:{{ netbird_signal.grpc_container_port }}
+
+LogDriver=json-file
+LogOpt=max-size=500m
+LogOpt=max-file=2
+
+[Service]
+Restart=unless-stopped
+
+[Install]
+WantedBy=default.target

@@ -30,7 +30,8 @@ python3 ~/podman-netbird/Quadlet/render.py configurations/prod.yaml
 sudo firewall-cmd --add-port=8080/tcp --permanent
 sudo firewall-cmd --add-port=8089/tcp --permanent
 sudo firewall-cmd --add-port=5432/tcp --permanent
-
+sudo firewall-cmd --add-port=3478/udp --permanent && sudo firewall-cmd --reload
+3478
 sudo firewall-cmd --reload
 ```
 

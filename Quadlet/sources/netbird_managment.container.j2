@@ -1,0 +1,32 @@
+[Unit]
+Description=NetBird Managment Server
+Wants=network-online.target
+After=network-online.target
+
+Requires={{ netbird_managment.depends_on }}
+After={{ netbird_managment.depends_on }}
+
+[Container]
+Image={{ netbird_managment.image }}
+ContainerName={{ netbird_managment.container_name }}
+Network={{ stack["network-netbird"] }}
+
+PublishPort={{ netbird_managment.host_port }}:{{ netbird_managment.container_port }}
+
+Volume={{ netbird_managment.volume_name }}:/var/lib/netbird:Z
+Volume={{ netbird_managment.config_file }}:/etc/netbird/management.json:Z
+
+Exec=\
+  --port {{ netbird_managment.container_port }} \
+  --log-file console \
+  --log-level info \
+  --disable-anonymous-metrics=false \
+  --single-account-mode-domain={{ netbird_managment.domain }} \
+  --dns-domain={{ netbird_managment.domain }} \
+  --idp-sign-key-refresh-enabled
+
+[Service]
+Restart=unless-stopped
+
+[Install]
+WantedBy=default.target
