@@ -1,0 +1,5 @@
+[Volume]
+VolumeName=postgres_data_netbird
+Device=/opt/storage/postgres_data_netbird
+Type=none
+Options=bind

@@ -1,105 +1,85 @@
-# Requiments
-```
-# This below will install pip3 module for python3
-sudo dnf install python3-pip -y
+# Netbird on Podman — Self-Hosted, Control in Your Hands!
 
-# This is to verify that cgroupv2 is enabled and default option should be first cgroup2
-mount|grep ^cgroup|awk '{print $1}'|uniq
+Supports rootless Netbird configurations with 3 examples:
 
+- **Example 1** — Standalone Netbird with built-in IDP (DEX) and Let's Encrypt with automatic cert renewal *(custom — check quadlet files to edit)*.
+- **Example 2** — Netbird with Keycloak on Postgres as an additional configuration, and Let's Encrypt with automatic cert renewal *(custom — check quadlet files to edit)*.
+- **Example 3** — Netbird with Postgres, Keycloak on Postgres as an additional configuration, and Let's Encrypt with automatic cert renewal *(custom — check quadlet files to edit)*.
 
-# Allow ports below 1024 to be use by rootles podman
-sysctl -w net.ipv4.ip_unprivileged_port_start=0.
+---
 
+## ⚠️ Important Notes
 
-```
+- This setup uses **Traefik** and has been tested with the latest version of Podman.
+- **SQLite** can cause issues over the long term and is therefore replaced by **Postgres**.
+- You **cannot** fully disable the IDP DEX — avoid doing so, as it will cause issues. Keycloak can be added as an *additional* IDP but not as a replacement.
+- **High Availability (HA) is not supported** due to limitations in `netbird-server`. If you need HA, please contact the Netbird team.  
+  However, it is possible to split the proxies and STUN server to distribute traffic without requiring HA on the server and dashboard — see:  
+  [Scaling Your Self-Hosted Deployment](https://docs.netbird.io/selfhosted/maintenance/scaling/scaling-your-self-hosted-deployment)
 
-## Build Quadlet files in systemd user directory
+---
 
-```
-python3 ~/podman-netbird/Quadlet/render.py configurations/prod.yaml 
-```
+## Installation & Setup
 
-
-
-## Before starting Quadlets
-
-
-### Enable Firewall
-
-```
-sudo firewall-cmd --add-port=8080/tcp --permanent
-sudo firewall-cmd --add-port=8089/tcp --permanent
-sudo firewall-cmd --add-port=5432/tcp --permanent
-sudo firewall-cmd --add-port=3478/udp --permanent && sudo firewall-cmd --reload
-3478
-sudo firewall-cmd --reload
+1. Install dependencies:
+```bash
+   # Install Podman and Python 3
+   pip3 install PyYAML Jinja2
 ```
 
+2. Pull this repository to the user that will execute the quadlets.
 
-### Generate Certificates
-
-bash ~/podman-netbird/helper-scripts/generate_selfsigned_certs.sh example.com
-
-
-
-### Enable Postgres and Keycloak
-
-```
-podman-compose --env-file ~/podman-netbird/.env/.env-keycloak-postgres -f ~/podman-netbird/keycloak-compose.yml up -d
+3. Set the environment variable (permanently):
+```bash
+   echo 'export SRC_PROJECT_PODMAN_NETBIRD=~/podman-netbird' >> ~/.bashrc && source ~/.bashrc
 ```
 
-
-### Enable Netbird 
-
-```
-podman-compose --env-file ~/podman-netbird/.env/.env-netbird -f ~/podman-netbird/netbird-compose.yml up -d
+4. Run the system check script — this must complete successfully before proceeding:
+```bash
+   python3 $SRC_PROJECT_PODMAN_NETBIRD/helper_scripts/check_system_status.py
 ```
 
-### Enable Netbird Dashboard
-
-
-```
-podman run -d \
-  --name netbird-dashboard \
-  --restart unless-stopped \
-  --network netbird-net \
-  -p 127.0.0.1:8080:80 \
-  --env-file ~/podman-netbird/.env/dashboard.env \
-  --log-driver json-file \
-  --log-opt max-size=500m \
-  --log-opt max-file=2 \
-  netbirdio/dashboard:latest
+5. Set up directories.  
+   > To access `/opt` as a standard user, ask your administrator or create the directories as a superuser:
+```bash
+   sudo -u YourUsername mkdir /opt/configurations
+   sudo -u YourUsername mkdir /opt/storage
+   python3 $SRC_PROJECT_PODMAN_NETBIRD/helper_scripts/setup_directories.py
 ```
 
-### Enable Netbird Managmenet service
+6. Choose one of the examples, update the files, and copy them:
 ```
-podman run -d \
-  --name netbird-management \
-  --restart unless-stopped \
-  --network netbird-net \
-  -p 127.0.0.1:8083:80 \
-  -v netbird_management:/var/lib/netbird \
-  -v ~/podman-netbird/management/management.json:/etc/netbird/management.json:Z \
-  --log-driver=json-file \
-  --log-opt max-size=500m \
-  --log-opt max-file=2 \
-  netbirdio/management:latest \
-  --port 80 \
-  --log-file console \
-  --log-level info \
-  --disable-anonymous-metrics=false \
-  --single-account-mode-domain=netbird.selfhosted \
-  --dns-domain=netbird.selfhosted \
-  --idp-sign-key-refresh-enabled
+   configs  → $SRC_PROJECT_PODMAN_NETBIRD/output/configurations
+   quadlets → $SRC_PROJECT_PODMAN_NETBIRD/output/quadlets
 ```
 
-### Enable Nginx 
+7. Push files to the correct directories:
+```bash
+   python3 $SRC_PROJECT_PODMAN_NETBIRD/helper_scripts/push_configurations_quadlets.py \
+     --prod-yml prod.yml \
+     --default-rl \
+     --source-path $SRC_PROJECT_PODMAN_NETBIRD
+```
 
+8. Start all services using the quadlets manager:
+```bash
+   python3 $SRC_PROJECT_PODMAN_NETBIRD/helper_scripts/quadlets_manager.py
 ```
-podman run -d \
-  --name nginx-netbird \
-  --network netbird-net \
-  -p 80:80 \
-  -v ~/podman-netbird/nginx_configuration:/etc/nginx/conf.d:ro,Z \
-  docker.io/library/nginx:stable
-```
+   > **Start order:** always start **volumes and networks** first, then **containers**.  
+   > Depending on your example, the recommended startup sequence is:  
+   > `Databases → Keycloak → Netbird components → Traefik`
+
+## To do
+   
+  - Fix the generations of configurations and quadlets from templates and rebuild scripts to smaller parts run by one.
+
+ -  Backups Scripts and test it.
+
+ -  Migration script for existing configurations.
+
+ - Custom TLS certificate.
+
+ -  Mulptiple Proxies.
+
+ - Log exporter helper to OTLP (Open telemetry).
+

@@ -1,0 +1,7 @@
+[Volume]
+VolumeName=netbird_traefik_letsencrypt
+Device=/opt/storage/netbird_letsencrypt
+Type=none
+Options=bind
+
+# Run Command: mkdir -p /opt/storage/netbird_letsencrypt

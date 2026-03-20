@@ -1,0 +1,56 @@
+[Unit]
+Description= Keycloack Manger Server
+Requires=postgres-db.service
+After=postgres-db.service
+StartLimitIntervalSec=300
+StartLimitBurst=5
+
+[Container]
+Image=quay.io/keycloak/keycloak:26.5.2
+
+
+
+
+
+Network=keycloak-postgres
+
+
+Network=keycloak-tf-network
+
+
+
+
+
+
+PublishPort=8089:8080
+EnvironmentFile=/opt/configurations/keycloak/.env-keycloak-manager
+ContainerName=keycloak-manager
+Exec=start
+Label="traefik.enable=true"
+Label="traefik.docker.network=keycloak-tf-network"
+
+#
+# Update below line with domain 
+#
+Label="traefik.http.routers.keycloak-manager.rule=Host(`your_domain)"  # yourdomain.com
+Label="traefik.http.routers.keycloak-manager.entrypoints=websecure"
+
+Label="traefik.http.routers.keycloak-manager.tls=true"
+
+Label="traefik.http.routers.keycloak-manager.service=keycloak-manager"
+Label="traefik.http.routers.keycloak-manager.priority=1"
+Label="traefik.http.services.keycloak-manager.loadbalancer.server.port=8080"
+
+
+[Service]
+#Restart=on-failure
+#RestartSec=10s
+
+#TimeoutStartSec=180
+#TimeoutStopSec=60
+
+#ExecStartPre=/usr/bin/bash -c 'until /usr/bin/podman healthcheck run postgres-db; do sleep 5; done'
+
+
+[Install]
+WantedBy=default.target

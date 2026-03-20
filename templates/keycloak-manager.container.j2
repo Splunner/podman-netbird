@@ -1,0 +1,51 @@
+[Unit]
+Description= {{keycloak_manager.description}}
+Requires={{ keycloak_manager.depends_on }}
+After={{ keycloak_manager.depends_on }}
+
+
+[Container]
+Image={{ keycloak_manager.image }}
+
+
+
+{% for network in keycloak_manager.networks %}
+{% set Network = network %}
+Network={{ Network }}
+{% endfor %}
+
+
+
+
+
+PublishPort={{ keycloak_manager.host_port }}:{{ keycloak_manager.container_port }}
+EnvironmentFile={{ keycloak_manager.env_file }}
+ContainerName={{ keycloak_manager.container_name}}
+Exec=start
+Label="traefik.enable=true"
+Label="traefik.docker.network={{keycloak_manager.default_proxy_network}}"
+Label="traefik.http.routers.{{keycloak_manager.container_name}}.rule=Host(`{{domain_keycloak}}`)"
+Label="traefik.http.routers.{{keycloak_manager.container_name}}.entrypoints=websecure"
+{% if use_letsencrypt %}
+Label="traefik.http.routers.{{keycloak_manager.container_name}}.tls=true"
+Label="traefik.http.routers.{{keycloak_manager.container_name}}.tls.certresolver=letsencrypt"
+{% else %}
+Label="traefik.http.routers.{{keycloak_manager.container_name}}.tls=true"
+{% endif %}
+Label="traefik.http.routers.{{keycloak_manager.container_name}}.service={{keycloak_manager.container_name}}"
+Label="traefik.http.routers.{{keycloak_manager.container_name}}.priority=1"
+Label="traefik.http.services.{{keycloak_manager.container_name}}.loadbalancer.server.port={{keycloak_manager.container_port}}"
+
+[Service]
+Restart=on-failure
+RestartSec=10s
+StartLimitIntervalSec=300
+StartLimitBurst=5
+TimeoutStartSec=180
+TimeoutStopSec=60
+
+ExecStartPre=/usr/bin/bash -c 'until /usr/bin/podman healthcheck run {{ postgres_db.container_name}}; do sleep 5; done'
+
+
+[Install]
+WantedBy=default.target

@@ -1,0 +1,12 @@
+tls:
+  certificates:
+    - certFile: /certs/cert-fullchain.pem
+      keyFile: /certs/privkey.pem
+    - certFile: /certs/gwwautht2-fullchain.pem
+      keyFile: /certs/gwwautht2-privkey.pem
+
+  stores:
+    default:
+      defaultCertificate:
+        certFile: /certs/cert-fullchain.pem
+        keyFile: /certs/privkey.pem

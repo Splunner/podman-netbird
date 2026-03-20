@@ -1,0 +1,8 @@
+config_files:
+  config.yaml:           /opt/configurations/netbird
+  certs.yml:             /opt/configurations/traefik/dynamic
+  .env-postgres:         /opt/configurations/postgres
+  .env-keycloak-manager: /opt/configurations/keycloak
+  dashboard.env:         /opt/configurations/netbird
+  .env-postgres-netbird: /opt/configurations/netbird
+  

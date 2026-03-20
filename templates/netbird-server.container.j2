@@ -1,0 +1,59 @@
+[Unit]
+Description={{netbird_server.description}}
+
+
+#Requires={{ netbird_server.traefik_service }}
+#After={{ netbird_server.traefik_service }}
+
+[Container]
+Image={{ netbird_server.image }}
+ContainerName={{ netbird_server.container_name }}
+
+
+{% for network in netbird_server.networks %}
+{% set Network = network %}
+Network={{ Network }}
+{% endfor %}
+
+{% for port in netbird_server.ports %}
+{% set PublishPort = port %}
+PublishPort={{ PublishPort }}
+{% endfor %}
+
+{% for volume  in netbird_server.volumes %}
+{% set Volume = volume %}
+Volume={{ Volume }}
+{% endfor %}
+
+{% set all_commands = netbird_server.commands | join(' \\ ') %}
+Exec={{ all_commands }}
+
+Label="traefik.enable=true"
+Label="traefik.docker.network={{netbird_traefik.network_netbird.split(':')[0]}}"
+Label="traefik.http.routers.{{netbird_server.netbird_service_grp_name}}.rule=Host(`{{domnain_netbird}}`) && (PathPrefix(`/signalexchange.SignalExchange/`) || PathPrefix(`/management.ManagementService/`))"
+Label="traefik.http.routers.{{netbird_server.netbird_service_grp_name}}.entrypoints=websecure"
+#Label="traefik.http.routers.{{netbird_server.netbird_service_grp_name}}.tls=true"
+Label="traefik.http.routers.{{netbird_server.netbird_service_grp_name}}.service={{netbird_server.container_name}}-h2c"
+Label="traefik.http.routers.{{netbird_server.netbird_service_grp_name}}.priority=100"
+Label="traefik.http.routers.{{netbird_server.netbird_backend_name}}.rule=Host(`{{domnain_netbird}}`) && (PathPrefix(`/relay`) || PathPrefix(`/ws-proxy/`) || PathPrefix(`/api`) || PathPrefix(`/oauth2`))"
+Label="traefik.http.routers.{{netbird_server.netbird_backend_name}}.entrypoints=websecure"
+{% if use_letsencrypt %}
+Label="traefik.http.routers.{{netbird_server.netbird_backend_name}}.tls=true"
+Label="traefik.http.routers.{{netbird_server.netbird_backend_name}}.tls.certresolver=letsencrypt"
+{% else %}
+Label="traefik.http.routers.{{netbird_server.netbird_backend_name}}.tls=true"
+{% endif %}
+
+Label="traefik.http.routers.{{netbird_server.netbird_backend_name}}.service=netbird-server"
+Label="traefik.http.routers.{{netbird_server.netbird_backend_name}}.priority=100"
+Label="traefik.http.services.{{netbird_server.container_name}}.loadbalancer.server.port=80"
+Label="traefik.http.services.{{netbird_server.container_name}}-h2c.loadbalancer.server.port=80"
+Label="traefik.http.services.{{netbird_server.container_name}}-h2c.loadbalancer.server.scheme=h2c"
+
+
+# Security hardening
+NoNewPrivileges=true
+SecurityLabelType=container_runtime_t
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,45 @@
+[Unit]
+Description={{netbird_dashboard.description}}
+
+
+
+#Requires={{ netbird_server.traefik_service }}
+#After={{ netbird_server.traefik_service }}
+
+[Container]
+Image={{ netbird_dashboard.image }}
+ContainerName={{ netbird_dashboard.container_name }}
+
+
+{% for network in netbird_dashboard.networks %}
+{% set Network = network %}
+Network={{ Network }}
+{% endfor %}
+
+
+
+EnvironmentFile={{netbird_dashboard.env_file}}
+
+
+Label="traefik.enable=true"
+Label="traefik.docker.network={{netbird_traefik.network_netbird.split(':')[0]}}"
+Label="traefik.http.routers.{{netbird_dashboard.container_name}}.rule=Host(`{{domnain_netbird}}`)"
+Label="traefik.http.routers.{{netbird_dashboard.container_name}}.entrypoints=websecure"
+{% if use_letsencrypt %}
+Label="traefik.http.routers.{{netbird_dashboard.container_name}}.tls=true"
+Label="traefik.http.routers.netbird_dashboard.container_name.tls.certresolver=letsencrypt"
+{% else %}
+Label="traefik.http.routers.{{netbird_dashboard.container_name}}.tls=true"
+{% endif %}
+Label="traefik.http.routers.{{netbird_dashboard.container_name}}.service={{netbird_dashboard.container_name}}"
+Label="traefik.http.routers.{{netbird_dashboard.container_name}}.priority=1"
+Label="traefik.http.services.{{netbird_dashboard.container_name}}.loadbalancer.server.port=80"
+
+
+
+# Security hardening
+NoNewPrivileges=true
+SecurityLabelType=container_runtime_t
+
+[Install]
+WantedBy=multi-user.target

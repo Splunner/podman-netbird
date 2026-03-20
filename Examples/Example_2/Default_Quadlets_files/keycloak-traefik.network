@@ -1,0 +1,3 @@
+[Network]
+NetworkName=keycloak-tf-network
+ServiceName=network-keycloak-traefik

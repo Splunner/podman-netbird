@@ -1,0 +1,45 @@
+[Unit]
+Description=NetBird Dashboard
+
+
+
+#Requires=netbird-traefik.service
+#After=netbird-traefik.service
+
+[Container]
+Image=docker.io/netbirdio/dashboard:latest
+ContainerName=netbird-dashboard
+
+
+
+
+Network=netbird-tf-network
+
+
+EnvironmentFile=/opt/configurations/netbird/dashboard.env
+
+
+
+
+Label="traefik.enable=true"
+Label="traefik.docker.network=netbird-tf-network"
+#
+# Update below line with domain 
+#
+Label="traefik.http.routers.netbird-dashboard.rule=Host(`your_domain`)" # yourdomain.com
+Label="traefik.http.routers.netbird-dashboard.entrypoints=websecure"
+
+Label="traefik.http.routers.netbird-dashboard.tls=true"
+
+Label="traefik.http.routers.netbird-dashboard.service=netbird-dashboard"
+Label="traefik.http.routers.netbird-dashboard.priority=1"
+Label="traefik.http.services.netbird-dashboard.loadbalancer.server.port=80"
+
+
+
+# Security hardening
+NoNewPrivileges=true
+SecurityLabelType=container_runtime_t
+
+[Install]
+WantedBy=default.target

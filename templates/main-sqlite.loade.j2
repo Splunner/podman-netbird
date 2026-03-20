@@ -1,0 +1,18 @@
+LOAD DATABASE
+     FROM sqlite://{{loader.main_data_path}}
+     INTO postgresql://{{postgres_db_netbird.postgres_db_name}}:{{postgres_db_netbird.postgres_db_password}}@{{postgres_db_netbird}}:5432/{{postgres_db_netbird.database_name}}
+
+WITH include drop, create tables, create indexes, reset sequences
+
+CAST
+     column accounts.is_domain_primary_account                    to boolean,
+     column accounts.settings_peer_login_expiration_enabled       to boolean,
+     column accounts.settings_peer_inactivity_expiration_enabled  to boolean,
+     column accounts.settings_regular_users_view_blocked          to boolean,
+     column accounts.settings_groups_propagation_enabled          to boolean,
+     column accounts.settings_jwt_groups_enabled                  to boolean,
+     column accounts.settings_routing_peer_dns_resolution_enabled to boolean,
+     column accounts.settings_extra_peer_approval_enabled         to boolean,
+     column accounts.settings_extra_user_approval_required        to boolean,
+     column accounts.settings_lazy_connection_enabled             to boolean
+;

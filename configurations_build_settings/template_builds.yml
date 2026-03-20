@@ -1,0 +1,59 @@
+paths:
+  templates_dir: templates
+  output_dir: output
+
+# ── System directories created on the server ──────────────────────────────
+system_directories:
+  # storage
+  DIR_NETBIRD_SERVER:        /opt/storage/netbird_server
+  DIR_POSTGRES_DATA_NETBIRD: /opt/storage/postgres_data_netbird
+  DIR_POSTGRES_DATA:         /opt/storage/postgres_data
+  DIR_NETBIRD_LETSENCRYPT:   /opt/storage/netbird_letsencrypt
+
+  # configurations
+  DIR_CONFIG_NETBIRD:        /opt/configurations/netbird
+  DIR_CONFIG_TRAEFIK:        /opt/configurations/traefik
+  DIR_CONFIG_KEYCLOAK:       /opt/configurations/keyclaok
+  DIR_CONFIG_POSTGRES:       /opt/configurations/postgres
+  DIR_DB_MIGRATION:          /opt/configuration/database_migration
+
+  # template builder output (relative to project root)
+  DIR_TEMPLATES:             templates
+  DIR_OUTPUT:                output
+  DIR_OUTPUT_QUADLETS:       output/quadlets
+  DIR_OUTPUT_CONFIGURATIONS: output/configurations
+
+
+templates_source:
+  # --- quadlets ---
+  - template_path: "templates/netbird-treafik.container.j2"
+    variable: netbird_traefik
+    output_path: "output/quadlets"
+  - template_path: "templates/netbird-dashboard.container.j2"
+    variable: netbird_dashboard
+    output_path: "output/quadlets"
+  - template_path: "templates/netbird-server.container.j2"
+    variable: netbird_server
+    output_path: "output/quadlets"
+  - template_path: "templates/keycloak-manager.container.j2"
+    variable: keycloak_manager
+    output_path: "output/quadlets"
+  - template_path: "templates/postgres-db.container.j2"
+    variable: postgres_db
+    output_path: "output/quadlets"
+
+  # --- configurations ---
+  - template_path: "templates/.env-keycloak-manager.j2"
+    variable: keycloak_manager
+    output_path: "output/configurations"
+  - template_path: "templates/.env-postgres.j2"
+    variable: postgres_db
+    output_path: "output/configurations"
+  - template_path: "templates/config.j2"
+    variable: netbird_server
+    output_path: "output/configurations"
+    output_name: "config.yaml"
+  - template_path: "templates/dashboard.j2"
+    variable: netbird_dashboard
+    output_path: "output/configurations"
+    output_name: "dashboard.env"

@@ -1,0 +1,5 @@
+[Volume]
+VolumeName=postgres_data
+Device=/opt/storage/postgres_data
+Type=none
+Options=bind

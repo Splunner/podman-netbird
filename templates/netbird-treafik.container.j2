@@ -1,0 +1,71 @@
+[Unit]
+Description={{ netbird_traefik.image }}
+
+[Container]
+Image={{ netbird_traefik.image }}
+ContainerName={{ netbird_traefik.container_name }}
+
+{% for port in netbird_traefik.ports %}
+{% set PublishPort = port %}
+PublishPort={{ PublishPort }}
+{% endfor %}
+
+
+
+Network={{ netbird_traefik.network_netbird }}
+{% if use_keycloak_IDP %}
+Network={{netbird_traefik.network_keycloak}}
+{% endif %}
+
+
+
+
+Exec=
+{% if debug %}
+  --log.level={{debug_level}} \
+{% endif %}
+--providers.docker=true \
+--accesslog=true \
+--providers.docker.exposedbydefault=false \
+--entrypoints.web.address=:80 \
+--entrypoints.websecure.address=:443 \
+--providers.file.directory=/etc/traefik/dynamic \
+--providers.file.watch=true \
+--entrypoints.websecure.transport.respondingTimeouts.readTimeout=0 \
+--entrypoints.websecure.transport.respondingTimeouts.writeTimeout=0 \
+--entrypoints.websecure.transport.respondingTimeouts.idleTimeout=0 \
+--entrypoints.web.http.redirections.entrypoint.to=websecure \
+--entrypoints.web.http.redirections.entrypoint.scheme=https \
+--serverstransport.forwardingtimeouts.responseheadertimeout=0s \
+--serverstransport.forwardingtimeouts.idleconntimeout=0s
+{% if use_letsencrypt %}
+  --certificatesresolvers.letsencrypt.acme.tlschallenge=true \
+  --certificatesresolvers.letsencrypt.acme.storage=/letsencrypt/acme.json \
+{% endif %}
+
+
+{% for volume  in netbird_traefik.volumes %}
+{% set Volume = volume %}
+Volume={{ Volume }}
+{% endfor %}
+
+
+{% if rootless_setup %}
+Volume={{ netbird_traefik.socket_treafik_rootless }}
+{% else %}
+Volume={{ netbird_traefik.socket_treafik_rootful }}
+{% endif %}
+
+AddCapability=CAP_NET_BIND_SERVICE
+LogDriver=journald
+
+# Security hardening
+NoNewPrivileges=true
+SecurityLabelType=container_runtime_t
+
+[Service]
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
+

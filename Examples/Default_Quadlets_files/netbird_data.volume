@@ -1,0 +1,5 @@
+[Volume]
+VolumeName=netbird_data
+Device=/opt/storage/netbird_server
+Type=none
+Options=bind

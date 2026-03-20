@@ -1,0 +1,192 @@
+
+paths:
+  templates_dir: templates
+  output_dir: output
+
+
+templates_source:
+  # --- quadlets ---
+  - template_path: "templates/netbird-treafik.container.j2"
+    variable: netbird_traefik
+    output_path: "output/quadlets"
+  - template_path: "templates/netbird-dashboard.container.j2"
+    variable: netbird_dashboard
+    output_path: "output/quadlets"
+  - template_path: "templates/netbird-server.container.j2"
+    variable: netbird_server
+    output_path: "output/quadlets"
+  - template_path: "templates/keycloak-manager.container.j2"
+    variable: keycloak_manager
+    output_path: "output/quadlets"
+  - template_path: "templates/postgres-db.container.j2"
+    variable: postgres_db
+    output_path: "output/quadlets"
+
+  # --- configurations ---
+  - template_path: "templates/.env-keycloak-manager.j2"
+    variable: keycloak_manager
+    output_path: "output/configurations"
+  - template_path: "templates/.env-postgres.j2"
+    variable: postgres_db
+    output_path: "output/configurations"
+  - template_path: "templates/config.j2"
+    variable: netbird_server
+    output_path: "output/configurations"
+    output_name: "config.yaml"       
+
+  - template_path: "templates/dashboard.j2"
+    variable: netbird_dashboard
+    output_path: "output/configurations"
+    output_name: "dashboard.env"   
+
+
+volumes_quadlets:
+  - name: netbird_data
+    location: "/opt/storage/netbird_server/"
+  - name: postgres_data
+    location: "/opt/storage/postgres_data/"
+  - name: netbird_traefik_letsencrypt
+    location: "/opt/storage/netbird_letsencrypt/"
+
+network_quadlets:
+  - template_path: "templates/netbird.network.j2"
+    output_path: "output/quadlets"
+  - template_path: "templates/keycloack-postgres.network.j2"
+    output_path: "output/quadlets"
+  - template_path: "templates/keycloak-traefik.network.j2"
+    output_path: "output/quadlets"
+
+config_files:
+  config.yaml:           /opt/configurations/netbird
+  certs.yml:             /opt/configurations/traefik/dynamic
+  .env-postgres:         /opt/configurations/postgres
+  .env-keycloak-manager: /opt/configurations/keycloak
+  dashboard.env:         /opt/configurations/netbird
+ 
+
+rootless_setup: true
+domain_keycloak: "gwwautht2.int.splunnersystem.com"
+domnain_netbird: "netbirdt2.int.splunnersystem.com"
+use_letsencrypt: false   # true or false
+use_keycloak_IDP: true  # true or false
+debug: true             # true or false
+debug_level: DEBUG
+
+netbird_traefik:
+  image: docker.io/library/traefik:v3.6
+  container_name: netbird-treafik
+  ports:
+    - 80:80
+    - 443:443
+  # used in scripts to build network services !!!  
+  # Please do not touch ip configuration, otherwise you will need to update those files below
+  # netbird.network.j2
+  # config.j2
+  # prod.yml
+  network_netbird:  "netbird-tf-network:172.30.0.10"
+  network_keycloak: "keycloak-tf-network"
+
+
+
+  volumes:
+    - /opt/configurations/traefik/certs:/certs
+    - /opt/configurations/traefik/dynamic:/etc/traefik/dynamic:ro
+    #  - netbird_traefik_letsencrypt:/letsencrypt
+  socket_treafik_rootful: /run/podman/podman.sock:/var/run/docker.sock:ro
+  socket_treafik_rootless: /run/user/1001/podman/podman.sock:/var/run/docker.sock:ro
+
+  
+netbird_dashboard:
+  description: NetBird Dashboard
+  container_name: netbird-dashboard
+  image: docker.io/netbirdio/dashboard:latest
+  networks:
+    - netbird-tf-network
+  traefik_service: netbird-traefik.service
+  env_file: /opt/configurations/netbird/dashboard.env
+  
+
+
+netbird_server:
+  description: NetBird Server
+  traefik_service: netbird-traefik.service
+  container_name: netbird-server
+  image: docker.io/netbirdio/netbird-server:latest
+  netbird_service_grp_name: netbird-grpc
+  netbird_backend_name: netbird-backend
+  networks: 
+    - netbird-tf-network
+ #   - netbird-db-postgres
+  
+  ports:
+    - 3478:3478/udp
+
+  volumes:
+    - netbird_data:/var/lib/netbird
+    - /opt/configurations/netbird/config.yaml:/etc/netbird/config.yaml
+
+  commands:
+    - --config /etc/netbird/config.yaml
+
+
+
+postgres_db:
+  description: Postgres Server for Keycloak 
+  service_name: Postgres-db.service
+  container_name: postgres-db
+  image: docker.io/postgres:15
+  # Please update keycloak network section, change here will have impact on other configurations
+  network: keycloak-postgres
+  env_file: "/opt/configurations/postgres/.env-postgres"
+  volumes: 
+    - "postgres_data:/var/lib/postgresql/data:Z"
+  ports:
+    - 5432:5432
+
+  # related to postgres -env build
+  postgres_db_name: keycloak
+  postgres_db_username: keycloak
+  postgres_db_password: "generate" # this will be generated randomly by script - plesae check the script - generator.py
+  postgreS_db_port: 5432
+
+keycloak_manager:
+  description: Keycloack Manger Server
+  container_name: "keycloak-manager"
+  depends_on: postgres-db.service
+  default_proxy_network: keycloak-tf-network
+  networks:
+    - keycloak-postgres
+    - keycloak-tf-network
+  image: quay.io/keycloak/keycloak:26.5.2
+  env_file: "/opt/configurations/keycloak/.env-keycloak-manager"
+  host_port: 8089
+  container_port: 8080
+
+  #env file variable
+  keycloak_admin: admin
+  keycloak_admin_password: admini_init
+
+  #enable http
+  kc_http_enabled: true
+
+  #disable hostname check
+  kc_hostname_strict: false
+
+  kc_forward_proxy_value: xforwarded
+  kc_http_relative_path_value: "/"
+
+postgres_db_netbird:
+  description: Postgres DB for netbird
+  container_name: postgres-db-netbird
+  image: docker.io/postgres:16
+  network: netbird-db-postgres
+  env_file: "/opt/configurations/netbird/.env-postgres-netbird"
+  volumes: 
+    - "postgres_data:/var/lib/postgresql/data:Z"
+  ports:
+    - 54355:5432
+   # related to postgres -env build
+  postgres_db_name: postgres
+  postgres_db_username: postgres
+  postgres_db_password: "generate" # this will be generated randomly by script - plesae check the script - generator.py
+  postgreS_db_port: 5432

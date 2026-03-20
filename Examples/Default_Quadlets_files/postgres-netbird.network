@@ -1,0 +1,3 @@
+[Network]
+NetworkName=netbird-db-postgres
+ServiceName=network-netbird-postgres

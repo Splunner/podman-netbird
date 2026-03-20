@@ -1,3 +1,0 @@
-!.gitignore
-*.conf
-!default.nginx_conf.conf

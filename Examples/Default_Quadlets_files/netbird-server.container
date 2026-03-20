@@ -1,0 +1,69 @@
+[Unit]
+Description=NetBird Server
+
+
+#Requires=netbird-traefik.service
+#After=netbird-traefik.service
+
+[Container]
+Image=docker.io/netbirdio/netbird-server:latest
+ContainerName=netbird-server
+
+
+Network=netbird-tf-network
+Network=netbird-db-postgres
+
+
+
+PublishPort=3478:3478/udp
+
+
+
+
+Volume=netbird_data:/var/lib/netbird
+
+
+Volume=/opt/configurations/netbird/config.yaml:/etc/netbird/config.yaml
+
+
+
+Exec=--config /etc/netbird/config.yaml
+
+#
+# Update below line with domain 
+#
+
+Label="traefik.enable=true"
+Label="traefik.docker.network=netbird-tf-network"
+
+#
+# Update below line with domain 
+#
+
+Label="traefik.http.routers.netbird-grpc.rule=Host(`your_domain`) && (PathPrefix(`/signalexchange.SignalExchange/`) || PathPrefix(`/management.ManagementService/`))"
+
+Label="traefik.http.routers.netbird-grpc.entrypoints=websecure"
+Label="traefik.http.routers.netbird-grpc.tls=true"
+Label="traefik.http.routers.netbird-grpc.service=netbird-server-h2c"
+Label="traefik.http.routers.netbird-grpc.priority=100"
+
+#
+# Update below line with domain 
+#
+
+Label="traefik.http.routers.netbird-backend.rule=Host(`your_domain`) && (PathPrefix(`/relay`) || PathPrefix(`/ws-proxy/`) || PathPrefix(`/api`) || PathPrefix(`/oauth2`))"
+Label="traefik.http.routers.netbird-backend.entrypoints=websecure"
+Label="traefik.http.routers.netbird-backend.tls=true"
+Label="traefik.http.routers.netbird-backend.service=netbird-server"
+Label="traefik.http.routers.netbird-backend.priority=100"
+Label="traefik.http.services.netbird-server.loadbalancer.server.port=80"
+Label="traefik.http.services.netbird-server-h2c.loadbalancer.server.port=80"
+Label="traefik.http.services.netbird-server-h2c.loadbalancer.server.scheme=h2c"
+
+
+# Security hardening
+NoNewPrivileges=true
+SecurityLabelType=container_runtime_t
+
+[Install]
+WantedBy=default.target
