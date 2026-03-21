@@ -1,74 +1,11 @@
-
-paths:
-  templates_dir: templates
-  output_dir: output
-
-
-templates_source:
-  # --- quadlets ---
-  - template_path: "templates/netbird-treafik.container.j2"
-    variable: netbird_traefik
-    output_path: "output/quadlets"
-  - template_path: "templates/netbird-dashboard.container.j2"
-    variable: netbird_dashboard
-    output_path: "output/quadlets"
-  - template_path: "templates/netbird-server.container.j2"
-    variable: netbird_server
-    output_path: "output/quadlets"
-  - template_path: "templates/keycloak-manager.container.j2"
-    variable: keycloak_manager
-    output_path: "output/quadlets"
-  - template_path: "templates/postgres-db.container.j2"
-    variable: postgres_db
-    output_path: "output/quadlets"
-
-  # --- configurations ---
-  - template_path: "templates/.env-keycloak-manager.j2"
-    variable: keycloak_manager
-    output_path: "output/configurations"
-  - template_path: "templates/.env-postgres.j2"
-    variable: postgres_db
-    output_path: "output/configurations"
-  - template_path: "templates/config.j2"
-    variable: netbird_server
-    output_path: "output/configurations"
-    output_name: "config.yaml"       
-
-  - template_path: "templates/dashboard.j2"
-    variable: netbird_dashboard
-    output_path: "output/configurations"
-    output_name: "dashboard.env"   
-
-
-volumes_quadlets:
-  - name: netbird_data
-    location: "/opt/storage/netbird_server/"
-  - name: postgres_data
-    location: "/opt/storage/postgres_data/"
-  - name: netbird_traefik_letsencrypt
-    location: "/opt/storage/netbird_letsencrypt/"
-
-network_quadlets:
-  - template_path: "templates/netbird.network.j2"
-    output_path: "output/quadlets"
-  - template_path: "templates/keycloack-postgres.network.j2"
-    output_path: "output/quadlets"
-  - template_path: "templates/keycloak-traefik.network.j2"
-    output_path: "output/quadlets"
-
-config_files:
-  config.yaml:           /opt/configurations/netbird
-  certs.yml:             /opt/configurations/traefik/dynamic
-  .env-postgres:         /opt/configurations/postgres
-  .env-keycloak-manager: /opt/configurations/keycloak
-  dashboard.env:         /opt/configurations/netbird
- 
-
 rootless_setup: true
 domain_keycloak: "gwwautht2.int.splunnersystem.com"
 domnain_netbird: "netbirdt2.int.splunnersystem.com"
-use_letsencrypt: false   # true or false
+use_letsencrypt: true   # true or false
+acme_email_letsencrypt: "contact@contact.test"
+# those options below are required if you generate settings
 use_keycloak_IDP: true  # true or false
+use_postgres_on_netbird: false
 debug: true             # true or false
 debug_level: DEBUG
 
@@ -190,3 +127,6 @@ postgres_db_netbird:
   postgres_db_username: postgres
   postgres_db_password: "generate" # this will be generated randomly by script - plesae check the script - generator.py
   postgreS_db_port: 5432
+  netbird_auth_db_name:   "netbird_auth"    # db for authStore
+  netbird_store_db_name:  "postgres"        # db for store (main)
+  netbird_events_db_name: "netbird_events"  # db for  activityStore

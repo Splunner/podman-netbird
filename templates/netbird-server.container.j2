@@ -32,7 +32,13 @@ Label="traefik.enable=true"
 Label="traefik.docker.network={{netbird_traefik.network_netbird.split(':')[0]}}"
 Label="traefik.http.routers.{{netbird_server.netbird_service_grp_name}}.rule=Host(`{{domnain_netbird}}`) && (PathPrefix(`/signalexchange.SignalExchange/`) || PathPrefix(`/management.ManagementService/`))"
 Label="traefik.http.routers.{{netbird_server.netbird_service_grp_name}}.entrypoints=websecure"
-#Label="traefik.http.routers.{{netbird_server.netbird_service_grp_name}}.tls=true"
+{% if use_letsencrypt %}
+Label="traefik.http.routers.{{netbird_server.netbird_backend_name}}.tls=true"
+Label="traefik.http.routers.{{netbird_server.netbird_backend_name}}.tls.certresolver=letsencrypt"
+{% else %}
+Label="traefik.http.routers.{{netbird_server.netbird_backend_name}}.tls=true"
+{% endif %}
+
 Label="traefik.http.routers.{{netbird_server.netbird_service_grp_name}}.service={{netbird_server.container_name}}-h2c"
 Label="traefik.http.routers.{{netbird_server.netbird_service_grp_name}}.priority=100"
 Label="traefik.http.routers.{{netbird_server.netbird_backend_name}}.rule=Host(`{{domnain_netbird}}`) && (PathPrefix(`/relay`) || PathPrefix(`/ws-proxy/`) || PathPrefix(`/api`) || PathPrefix(`/oauth2`))"

@@ -19,6 +19,22 @@ Supports rootless Netbird configurations with 3 examples:
 
 ---
 
+## Remove Docker if was used before 
+```
+#Remove all related to docker
+sudo docker rm -f $(sudo docker ps -aq)
+sudo docker rmi -f $(sudo docker images -q)
+sudo docker volume rm $(sudo docker volume ls -q)
+sudo docker network prune -f
+
+# Stop all services related to docker
+sudo systemctl stop docker.socket
+sudo systemctl stop docker.service
+
+# unistall Packages
+sudo dnf remove -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+```
+
 ## Installation & Setup
 
 1. Install dependencies:
@@ -53,6 +69,17 @@ Supports rootless Netbird configurations with 3 examples:
    quadlets → $SRC_PROJECT_PODMAN_NETBIRD/output/quadlets
 ```
 
+OR
+
+  Build files:
+  -  Configurations files: python3 config_generations.py --prod-yml  $SRC_PROJECT_PODMAN_NETBIRD/configurations_build_settings/prod.yml --templates-yml $SRC_PROJECT_PODMAN_NETBIRD/configurations_build_settings/template_builds.yml  --src-project $SRC_PROJECT_PODMAN_NETBIRD
+     --overdrive if files exists and requires overwrite
+  -  Network Quadlets python3 network_quadlets_generations.py  --prod-yml  $SRC_PROJECT_PODMAN_NETBIRD/configurations_build_settings/prod.yml --templates-yml $SRC_PROJECT_PODMAN_NETBIRD/configurations_build_settings/template_builds.yml  --src-project  $SRC_PROJECT_PODMAN_NETBIRD
+     --overdrive
+  - Volume Quadlets python3 volume_quadlets_generations.py --prod-yml  $SRC_PROJECT_PODMAN_NETBIRD/configurations_build_settings/prod.yml --templates-yml $SRC_PROJECT_PODMAN_NETBIRD/configurations_build_settings/template_builds.yml  --src-project  $SRC_PROJECT_PODMAN_NETBIRD
+    --overdrive
+  -To build Containers Quadlet python3 quadlets_generations.py --prod-yml  $SRC_PROJECT_PODMAN_NETBIRD/configurations_build_settings/prod.yml --templates-yml $SRC_PROJECT_PODMAN_NETBIRD/configurations_build_settings/template_builds.yml  --src-project  $SRC_PROJECT_PODMAN_NETBIRD
+  --overdrive
 7. Push files to the correct directories:
 ```bash
    python3 $SRC_PROJECT_PODMAN_NETBIRD/helper_scripts/push_configurations_quadlets.py \

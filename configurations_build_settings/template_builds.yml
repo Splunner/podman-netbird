@@ -26,7 +26,7 @@ system_directories:
 
 templates_source:
   # --- quadlets ---
-  - template_path: "templates/netbird-treafik.container.j2"
+  - template_path: "templates/netbird-traefik.container.j2"
     variable: netbird_traefik
     output_path: "output/quadlets"
   - template_path: "templates/netbird-dashboard.container.j2"
@@ -40,6 +40,9 @@ templates_source:
     output_path: "output/quadlets"
   - template_path: "templates/postgres-db.container.j2"
     variable: postgres_db
+    output_path: "output/quadlets"
+  - template_path: "templates/postgres-db-netbird.container.j2"
+    variable: postgres_db_netbird
     output_path: "output/quadlets"
 
   # --- configurations ---
@@ -57,3 +60,37 @@ templates_source:
     variable: netbird_dashboard
     output_path: "output/configurations"
     output_name: "dashboard.env"
+  - template_path: "templates/.env-postgres-netbird.j2"
+    variable: postgres_db_netbird
+    output_path: "output/configurations"
+    output_name: ".env-postgres-netbird"
+
+
+
+volumes_quadlets:
+  - name: netbird_data
+    location: "/opt/storage/netbird_server/"
+  - name: postgres_data
+    location: "/opt/storage/postgres_data/"
+  - name: netbird_traefik_letsencrypt
+    location: "/opt/storage/netbird_letsencrypt/"
+  - name: postgres_data_netbird
+    location: "/opt/storage/postgres_data_netbird"
+
+network_quadlets:
+  - template_path: "templates/netbird.network.j2"
+    output_path: "output/quadlets"
+  - template_path: "templates/keycloack-postgres.network.j2"
+    output_path: "output/quadlets"
+  - template_path: "templates/keycloak-traefik.network.j2"
+    output_path: "output/quadlets"
+  - template_path: "templates/postgres-netbird.network.j2"
+    output_path: "output/quadlets"
+
+config_files:
+  config.yaml:           /opt/configurations/netbird
+  certs.yml:             /opt/configurations/traefik/dynamic
+  .env-postgres:         /opt/configurations/postgres
+  .env-keycloak-manager: /opt/configurations/keycloak
+  dashboard.env:         /opt/configurations/netbird
+ 
