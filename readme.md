@@ -78,7 +78,7 @@ OR
      --overdrive
   - Volume Quadlets python3 volume_quadlets_generations.py --prod-yml  $SRC_PROJECT_PODMAN_NETBIRD/configurations_build_settings/prod.yml --templates-yml $SRC_PROJECT_PODMAN_NETBIRD/configurations_build_settings/template_builds.yml  --src-project  $SRC_PROJECT_PODMAN_NETBIRD
     --overdrive
-  -To build Containers Quadlet python3 quadlets_generations.py --prod-yml  $SRC_PROJECT_PODMAN_NETBIRD/configurations_build_settings/prod.yml --templates-yml $SRC_PROJECT_PODMAN_NETBIRD/configurations_build_settings/template_builds.yml  --src-project  $SRC_PROJECT_PODMAN_NETBIRD
+  - To build Containers Quadlet python3 quadlets_generations.py --prod-yml  $SRC_PROJECT_PODMAN_NETBIRD/configurations_build_settings/prod.yml --templates-yml $SRC_PROJECT_PODMAN_NETBIRD/configurations_build_settings/template_builds.yml  --src-project  $SRC_PROJECT_PODMAN_NETBIRD
   --overdrive
 7. Push files to the correct directories:
 ```bash
