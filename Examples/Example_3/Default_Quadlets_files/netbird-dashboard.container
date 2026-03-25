@@ -21,12 +21,18 @@ EnvironmentFile=/opt/configurations/netbird/dashboard.env
 
 
 
+# Middleware — redirect /logout na Keycloak end_session_endpoint
+#Label="traefik.http.middlewares.keycloak-logout.redirectregex.regex=^https://your_domain_netbird.comn/logout$$"
+#Label="traefik.http.middlewares.keycloak-logout.redirectregex.replacement=https://your_domain_keycloak/realms/netbird/protocol/openid-connect/logout?post_logout_redirect_uri=https://your_domain_netbird.com/&client_id=netbird"
+#Label="traefik.http.middlewares.keycloak-logout.redirectregex.permanent=false"
+
+
 Label="traefik.enable=true"
 Label="traefik.docker.network=netbird-tf-network"
 #
 # Update below line with domain 
 #
-Label="traefik.http.routers.netbird-dashboard.rule=Host(`your_domain`)" # yourdomain.com
+Label="traefik.http.routers.netbird-dashboard.rule=Host(`your_domain_netbird.com`)" # yourdomain.com
 Label="traefik.http.routers.netbird-dashboard.entrypoints=websecure"
 
 Label="traefik.http.routers.netbird-dashboard.tls=true"
@@ -34,8 +40,6 @@ Label="traefik.http.routers.netbird-dashboard.tls=true"
 Label="traefik.http.routers.netbird-dashboard.service=netbird-dashboard"
 Label="traefik.http.routers.netbird-dashboard.priority=1"
 Label="traefik.http.services.netbird-dashboard.loadbalancer.server.port=80"
-
-
 
 # Security hardening
 NoNewPrivileges=true

@@ -93,4 +93,4 @@ config_files:
   .env-postgres:         /opt/configurations/postgres
   .env-keycloak-manager: /opt/configurations/keycloak
   dashboard.env:         /opt/configurations/netbird
- 
+  .env-postgres-netbird: /opt/configurations/netbird

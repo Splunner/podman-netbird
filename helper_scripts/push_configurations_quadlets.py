@@ -169,7 +169,7 @@ def main() -> None:
     # Resolve source_path
     # Priority: --default-rl > --source-path > prod.yml source_path
     # ------------------------------------------------------------------
-    quadlets_dest_override: Path | None = None
+   quadlets_dest_override: Optional[Path] = None
 
     if args.default_rl:
         env_var = os.environ.get("SRC_PROJECT_PODMAN_NETBIRD")
